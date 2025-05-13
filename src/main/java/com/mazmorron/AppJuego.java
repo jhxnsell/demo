@@ -1,4 +1,4 @@
-package com.example;
+package com.mazmorron;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -11,7 +11,7 @@ import java.io.IOException;
 /**
  * JavaFX App
  */
-public class App extends Application {
+public class AppJuego extends Application {
 
     private static Scene scene;
 
@@ -27,7 +27,7 @@ public class App extends Application {
     }
 
     private static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource(fxml + ".fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(AppJuego.class.getResource(fxml + ".fxml"));
         return fxmlLoader.load();
     }
 
