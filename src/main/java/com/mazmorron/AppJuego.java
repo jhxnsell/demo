@@ -1,106 +1,155 @@
 package com.mazmorron;
 
-/*
- * @author Lucas Rasmussen Marcos y Jhansell Francisco García Vargas
- */
-
+import com.mazmorron.controlador.ControladorApp;
+import com.mazmorron.controlador.ControladorInicio;
+import com.mazmorron.modelo.ModeloJuego;
+import com.mazmorron.modelo.Prota;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import com.mazmorron.modelo.ModeloJuego;
-import com.mazmorron.modelo.Prota;
-import com.mazmorron.controlador.ControladorApp;
-import com.mazmorron.controlador.ControladorInicio;
-import com.mazmorron.controlador.ControladorFinal;
 
 public class AppJuego extends Application {
 
+    private Stage escenario;
+    private ModeloJuego modelo;
+    private ControladorApp controlador;
+
+    private int nivelActual = 0;
+    private final String[] mapas = {
+            "/nivel1.txt",
+            "/nivel2.txt",
+            "/nivel3.txt"
+    };
+    private final String[] enemigos = {
+            "/enemigos1.txt",
+            "/enemigos2.txt",
+            "/enemigos3.txt"
+    };
+
     @Override
-    public void start(Stage escenarioPrincipal) throws Exception {
-        FXMLLoader loaderInicio = new FXMLLoader(getClass().getResource("/vista/VistaInicio.fxml"));
-        Parent raizInicio = loaderInicio.load();
-        ControladorInicio controladorInicio = loaderInicio.getController();
+    public void start(Stage stage) {
+        this.escenario = stage;
 
-        Scene escenaInicio = new Scene(raizInicio);
-        escenarioPrincipal.setTitle("Configuración del Juego");
-        escenarioPrincipal.setScene(escenaInicio);
-        escenarioPrincipal.show();
-
-        controladorInicio.inicializar(escenarioPrincipal, () -> {
-            try {
-                lanzarJuego(escenarioPrincipal, controladorInicio.getProtagonista());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        mostrarPantallaInicio();
     }
 
-    private void lanzarJuego(Stage escenario, Prota protagonista) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/VistaPrincipal.fxml"));
-        Parent raiz = loader.load();
+    private void mostrarPantallaInicio() {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/VistaInicio.fxml"));
+        Parent root = loader.load();
 
-        ModeloJuego modelo = new ModeloJuego();
-        modelo.cargarMapaDesde(getClass().getResourceAsStream("/datos/mapa.txt"));
-        modelo.cargarEnemigosDesde(getClass().getResourceAsStream("/datos/enemigos.txt"));
+        ControladorInicio controladorInicio = loader.getController();
 
-        protagonista.setPosicion(1, 1);
-        modelo.setProtagonista(protagonista);
-        if (modelo.getMapa()[1][1].getOcupante() != null) {
-            modelo.getMapa()[1][1].setOcupante(null);
-        }
-        modelo.getMapa()[1][1].setOcupante(protagonista);
+        Stage ventanaInicio = new Stage();
+        ventanaInicio.setTitle("Mazmorron - Inicio");
+        ventanaInicio.setScene(new Scene(root));
+        ventanaInicio.initOwner(escenario);  // opcional
+        ventanaInicio.centerOnScreen();
+        ventanaInicio.showAndWait(); // Espera a que el jugador haga clic en "Iniciar"
 
-        modelo.setAccionFin(() -> mostrarFin(modelo.getProtagonista().getSalud() > 0, escenario));
-
-        ControladorApp controlador = loader.getController();
-        controlador.setModelo(modelo);
-
-        Scene escena = new Scene(raiz);
-        escena.setOnKeyPressed(controlador::alPresionarTecla);
-
-        escenario.setTitle("Juego de Mazmorra");
-        escenario.setScene(escena);
-        escenario.show();
-
-        escenario.centerOnScreen();       
-        escenario.setMaximized(true);
-        
-        controlador.inicializarJuego();
-        modelo.turnoSiguiente();
-    }
-
-    private void mostrarFin(boolean victoria, Stage escenario) {
-        try {
-            FXMLLoader loaderFin = new FXMLLoader(getClass().getResource("/vista/VistaFinal.fxml"));
-            Parent raiz = loaderFin.load();
-            ControladorFinal controladorFin = loaderFin.getController();
-
-            Scene escenaFin = new Scene(raiz);
-
-            controladorFin.inicializar(escenario, victoria,
-                () -> {
-                    try {
-                        start(escenario);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                },
-                () -> {
-                    System.out.println("Aquí podrías cargar un nuevo mapa para el siguiente nivel.");
-                    System.exit(0);
-                },
-                () -> System.exit(0)
+        if (controladorInicio.isDatosConfirmados()) {
+            Prota prota = new Prota(
+                controladorInicio.getNombre(),
+                controladorInicio.getSalud(),
+                controladorInicio.getAtaque(),
+                controladorInicio.getDefensa(),
+                controladorInicio.getVelocidad()
             );
+            prota.setPosicion(1, 1);
+            lanzarJuego(prota);
+        } else {
+            System.out.println("Inicio cancelado.");
+            System.exit(0);
+        }
 
-            escenario.setScene(escenaFin);
-            escenario.setTitle("Fin de la partida");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void lanzarJuego(Prota protagonista) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/VistaPrincipal.fxml"));
+            Parent root = loader.load();
+
+            controlador = loader.getController();
+
+            modelo = new ModeloJuego();
+            modelo.setProtagonista(protagonista);
+
+            modelo.setAccionFin(() -> {
+                boolean victoria = modelo.getProtagonista().getSalud() > 0;
+
+                if (victoria) {
+                    nivelActual++;
+                    if (nivelActual < mapas.length) {
+                        cargarNivel(protagonista);
+                    } else {
+                        mostrarPantallaFinal(true);
+                    }
+                } else {
+                    mostrarPantallaFinal(false);
+                }
+            });
+
+            modelo.cargarMapaDesde(getClass().getResourceAsStream(mapas[nivelActual]));
+            modelo.cargarEnemigosDesde(getClass().getResourceAsStream(enemigos[nivelActual]));
+
+            controlador.setModelo(modelo);
+            controlador.inicializarJuego();
+
+            Scene escena = new Scene(root);
+            escena.setOnKeyPressed(controlador::alPresionarTecla);
+            escenario.setScene(escena);
+            escenario.setTitle("Mazmorron - Juego");
+            escenario.setMaximized(true);
+            escenario.centerOnScreen();
             escenario.show();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void cargarNivel(Prota protagonista) {
+        try {
+            modelo = new ModeloJuego();
+            modelo.setProtagonista(protagonista);
+            protagonista.setPosicion(1, 1);
+
+            modelo.setAccionFin(() -> {
+                boolean victoria = modelo.getProtagonista().getSalud() > 0;
+
+                if (victoria) {
+                    nivelActual++;
+                    if (nivelActual < mapas.length) {
+                        cargarNivel(protagonista);
+                    } else {
+                        mostrarPantallaFinal(true);
+                    }
+                } else {
+                    mostrarPantallaFinal(false);
+                }
+            });
+
+            modelo.cargarMapaDesde(getClass().getResourceAsStream(mapas[nivelActual]));
+            modelo.cargarEnemigosDesde(getClass().getResourceAsStream(enemigos[nivelActual]));
+
+            controlador.setModelo(modelo);
+            controlador.inicializarJuego();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void mostrarPantallaFinal(boolean gano) {
+        // Aquí podrías cargar una VistaFinal.fxml con botones "Salir" o "Reintentar"
+        System.out.println(gano ? "¡Has ganado el juego!" : "Has sido derrotado.");
+        System.exit(0);
     }
 
     public static void main(String[] args) {

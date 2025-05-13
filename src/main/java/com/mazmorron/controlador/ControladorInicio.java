@@ -1,46 +1,66 @@
 package com.mazmorron.controlador;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
-import com.mazmorron.modelo.Prota;
 
 public class ControladorInicio {
 
-    @FXML private TextField campoSalud;
-    @FXML private TextField campoAtaque;
-    @FXML private TextField campoDefensa;
-    @FXML private TextField campoVelocidad;
+    @FXML private TextField txtNombre;
+    @FXML private TextField txtSalud;
+    @FXML private TextField txtAtaque;
+    @FXML private TextField txtDefensa;
+    @FXML private TextField txtVelocidad;
+    @FXML private Button btnIniciar;
 
-    private Stage escenario;
-    private Runnable accionDespues;
-    private Prota protagonista;
+    private boolean datosConfirmados = false;
 
-    public void inicializar(Stage escenario, Runnable continuar) {
-        this.escenario = escenario;
-        this.accionDespues = continuar;
-    }
+    private String nombre;
+    private int salud;
+    private int ataque;
+    private int defensa;
+    private int velocidad;
 
     @FXML
-    public void alHacerClickIniciar() {
+    private void alHacerClickIniciar() {
         try {
-            int salud = Integer.parseInt(campoSalud.getText());
-            int ataque = Integer.parseInt(campoAtaque.getText());
-            int defensa = Integer.parseInt(campoDefensa.getText());
-            int velocidad = Integer.parseInt(campoVelocidad.getText());
+            nombre = txtNombre.getText().trim();
+            salud = Integer.parseInt(txtSalud.getText());
+            ataque = Integer.parseInt(txtAtaque.getText());
+            defensa = Integer.parseInt(txtDefensa.getText());
+            velocidad = Integer.parseInt(txtVelocidad.getText());
 
-            protagonista = new Prota("Héroe", salud, ataque, defensa, velocidad, 0);
+            datosConfirmados = true;
 
-            if (accionDespues != null) {
-                accionDespues.run();
-            }
+            // Cierra ventana actual
+            btnIniciar.getScene().getWindow().hide();
 
         } catch (NumberFormatException e) {
-            System.out.println("Introduce valores numéricos válidos.");
+            System.err.println("Introduce valores válidos en todos los campos.");
         }
     }
 
-    public Prota getProtagonista() {
-        return protagonista;
+    public boolean isDatosConfirmados() {
+        return datosConfirmados;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public int getSalud() {
+        return salud;
+    }
+
+    public int getAtaque() {
+        return ataque;
+    }
+
+    public int getDefensa() {
+        return defensa;
+    }
+
+    public int getVelocidad() {
+        return velocidad;
     }
 }
