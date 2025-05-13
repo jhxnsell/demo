@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.mazmorron.controlador.ControladorApp">
+
+    <!-- Panel central con el tablero -->
+    <center>
+        <GridPane fx:id="panelCuadricula" hgap="2" vgap="2"
+                  BorderPane.alignment="CENTER" />
+    </center>
+
+    <!-- Panel derecho con estadísticas y turnos -->
+    <right>
+        <VBox alignment="TOP_LEFT" spacing="10">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+            </padding>
+
+            <Label text="ESTADÍSTICAS" />
+            <Label fx:id="lblSalud" text="Salud: " />
+            <Label fx:id="lblAtaque" text="Ataque: " />
+            <Label fx:id="lblDefensa" text="Defensa: " />
+            <Label fx:id="lblVelocidad" text="Velocidad: " />
+            <Separator />
+            <Label text="Orden de Turnos" />
+            <ListView fx:id="lvOrdenTurnos" prefHeight="200" />
+        </VBox>
+    </right>
+
+</BorderPane>

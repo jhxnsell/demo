@@ -22,7 +22,9 @@ public class ModeloJuego {
     private Celda[][] mapa;
     private Runnable accionFin;
 
-    public void agregarEscucha(EscuchaModelo escucha) {escuchas.add(escucha);}
+    public void agregarEscucha(EscuchaModelo escucha) {
+        escuchas.add(escucha);
+    }
 
     public void notificarEscuchas() {
         for (EscuchaModelo escucha : escuchas) {
@@ -30,13 +32,30 @@ public class ModeloJuego {
         }
     }
 
-    public void setProtagonista(Prota p) {this.protagonista = p;}
-    public Prota getProtagonista() {return protagonista;}
-    public Personaje getPersonajeActual() {return personajeActual;}
-    public List<Enemigo> getEnemigos() {return enemigos;}
-    public Celda[][] getMapa() {return mapa;}
-    public void setAccionFin(Runnable accion) {this.accionFin = accion;}
-    
+    public void setProtagonista(Prota p) {
+        this.protagonista = p;
+    }
+
+    public Prota getProtagonista() {
+        return protagonista;
+    }
+
+    public Personaje getPersonajeActual() {
+        return personajeActual;
+    }
+
+    public List<Enemigo> getEnemigos() {
+        return enemigos;
+    }
+
+    public Celda[][] getMapa() {
+        return mapa;
+    }
+
+    public void setAccionFin(Runnable accion) {
+        this.accionFin = accion;
+    }
+
     private void notificarFin(boolean victoria) {
         if (accionFin != null) {
             accionFin.run();
@@ -143,6 +162,8 @@ public class ModeloJuego {
             });
             pausa.play();
         }
+
+        // Si es el protagonista, se espera a que el jugador actúe
     }
 
     private void prepararTurnos() {
