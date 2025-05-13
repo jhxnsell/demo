@@ -13,22 +13,13 @@
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
-    <Label text="¡Bienvenido al juego!" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+    <Label text="¡Bienvenido a Mazmorron!" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
 
-    <Label text="Nombre del protagonista:"/>
-    <TextField fx:id="txtNombre" promptText="Ejemplo: Arturo"/>
-
-    <Label text="Salud:"/>
-    <TextField fx:id="txtSalud" promptText="100"/>
-
-    <Label text="Ataque:"/>
-    <TextField fx:id="txtAtaque" promptText="15"/>
-
-    <Label text="Defensa:"/>
-    <TextField fx:id="txtDefensa" promptText="10"/>
-
-    <Label text="Velocidad:"/>
-    <TextField fx:id="txtVelocidad" promptText="5"/>
+    <TextField fx:id="txtNombre" promptText="Nombre del protagonista"/>
+    <TextField fx:id="txtSalud" promptText="Salud"/>
+    <TextField fx:id="txtAtaque" promptText="Ataque"/>
+    <TextField fx:id="txtDefensa" promptText="Defensa"/>
+    <TextField fx:id="txtVelocidad" promptText="Velocidad"/>
 
     <Button fx:id="btnIniciar" text="Iniciar Partida" onAction="#alHacerClickIniciar"/>
 

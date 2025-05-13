@@ -27,20 +27,20 @@ public class ControladorApp implements ModeloJuego.EscuchaModelo {
     }
 
     public void inicializarJuego() {
-        dibujarMapa();
-        actualizarEstadisticas();
-        actualizarOrdenTurnos();
+    dibujarMapa();
+    actualizarEstadisticas();
+    actualizarOrdenTurnos();
 
-        // Forzar foco al tablero
-        panelCuadricula.requestFocus();
+    // Forzar foco al tablero
+    panelCuadricula.requestFocus();
+    panelCuadricula.focusedProperty().addListener((obs, oldV, newV) -> {
+        if (!newV) panelCuadricula.requestFocus();
+    });
 
-        // Reasignar foco si se pierde
-        panelCuadricula.focusedProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal) {
-                panelCuadricula.requestFocus();
-            }
-        });
+    // 🚀 Arrancamos la secuencia de turnos para que personajeActual sea el protagonista
+    modelo.turnoSiguiente();
     }
+
 
     public void dibujarMapa() {
         panelCuadricula.getChildren().clear();

@@ -1,3 +1,4 @@
+// src/main/java/com/mazmorron/modelo/ModeloJuego.java
 package com.mazmorron.modelo;
 
 import java.io.BufferedReader;
@@ -28,9 +29,7 @@ public class ModeloJuego {
     }
 
     public void notificarEscuchas() {
-        for (EscuchaModelo escucha : escuchas) {
-            escucha.alCambiarModelo();
-        }
+        for (EscuchaModelo e : escuchas) e.alCambiarModelo();
     }
 
     public void setProtagonista(Prota p) {
@@ -53,71 +52,62 @@ public class ModeloJuego {
         return mapa;
     }
 
-    public void setAccionFin(Runnable accion) {
-        this.accionFin = accion;
-    }
-
     public int getTurnoActual() {
         return turnoActual;
     }
 
-    private void notificarFin(boolean victoria) {
-        if (accionFin != null) {
-            accionFin.run();
-        }
+    public void setAccionFin(Runnable accion) {
+        this.accionFin = accion;
     }
 
-    public void cargarMapaDesde(InputStream input) {
-        try (BufferedReader lector = new BufferedReader(new InputStreamReader(input))) {
-            List<String> lineas = new ArrayList<>();
-            String linea;
-            int maxColumnas = 0;
+    private void notificarFin(boolean victoria) {
+        if (accionFin != null) accionFin.run();
+    }
 
-            while ((linea = lector.readLine()) != null) {
-                if (!linea.trim().isEmpty()) {
-                    lineas.add(linea);
-                    maxColumnas = Math.max(maxColumnas, linea.length());
+    public void cargarMapaDesde(InputStream in) {
+        if (in == null) throw new IllegalArgumentException("Mapa: recurso no encontrado.");
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(in))) {
+            List<String> lines = new ArrayList<>();
+            String line; int maxC = 0;
+            while ((line = r.readLine()) != null) {
+                if (!line.trim().isEmpty()) {
+                    lines.add(line);
+                    maxC = Math.max(maxC, line.length());
                 }
             }
-
-            int filas = lineas.size();
-            mapa = new Celda[filas][maxColumnas];
-
-            for (int i = 0; i < filas; i++) {
-                String fila = lineas.get(i);
-                for (int j = 0; j < maxColumnas; j++) {
-                    char c = j < fila.length() ? fila.charAt(j) : '.';
-                    mapa[i][j] = new Celda(c == '#');
+            mapa = new Celda[lines.size()][maxC];
+            for (int i = 0; i < lines.size(); i++) {
+                String row = lines.get(i);
+                for (int j = 0; j < maxC; j++) {
+                    mapa[i][j] = new Celda(j < row.length() && row.charAt(j) == '#');
                 }
             }
-
             notificarEscuchas();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void cargarEnemigosDesde(InputStream input) {
-        try (BufferedReader lector = new BufferedReader(new InputStreamReader(input))) {
-            String linea;
-            while ((linea = lector.readLine()) != null) {
-                if (linea.trim().isEmpty()) continue;
-                String[] partes = linea.split(",");
-                String nombre = partes[0];
-                int x = Integer.parseInt(partes[1]);
-                int y = Integer.parseInt(partes[2]);
-                int salud = Integer.parseInt(partes[3]);
-                int ataque = Integer.parseInt(partes[4]);
-                int defensa = Integer.parseInt(partes[5]);
-                int velocidad = Integer.parseInt(partes[6]);
-                int vision = Integer.parseInt(partes[7]);
-
-                Enemigo enemigo = new Enemigo(nombre, salud, ataque, defensa, velocidad, vision);
-                enemigo.setPosicion(x, y);
-                enemigos.add(enemigo);
-                mapa[x][y].setOcupante(enemigo);
+    public void cargarEnemigosDesde(InputStream in) {
+        if (in == null) throw new IllegalArgumentException("Enemigos: recurso no encontrado.");
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(in))) {
+            String line;
+            while ((line = r.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+                String[] p = line.split(",");
+                Enemigo e = new Enemigo(
+                    p[0],
+                    Integer.parseInt(p[3]),
+                    Integer.parseInt(p[4]),
+                    Integer.parseInt(p[5]),
+                    Integer.parseInt(p[6]),
+                    Integer.parseInt(p[7])
+                );
+                int x = Integer.parseInt(p[1]), y = Integer.parseInt(p[2]);
+                e.setPosicion(x, y);
+                enemigos.add(e);
+                mapa[x][y].setOcupante(e);
             }
-
             notificarEscuchas();
         } catch (Exception e) {
             e.printStackTrace();
@@ -126,23 +116,18 @@ public class ModeloJuego {
 
     public boolean moverProtagonista(int dx, int dy) {
         if (!(personajeActual instanceof Prota)) return false;
+        int x = protagonista.getX(), y = protagonista.getY();
+        int nx = x + dx, ny = y + dy;
+        if (!enLimites(nx, ny) || mapa[nx][ny].esMuro()) return false;
 
-        int x = protagonista.getX();
-        int y = protagonista.getY();
-        int nuevoX = x + dx;
-        int nuevoY = y + dy;
-
-        if (!enLimites(nuevoX, nuevoY) || mapa[nuevoX][nuevoY].esMuro()) return false;
-
-        Personaje objetivo = mapa[nuevoX][nuevoY].getOcupante();
-        if (objetivo instanceof Enemigo) {
-            atacar(protagonista, objetivo);
-        } else if (objetivo == null) {
+        Personaje obj = mapa[nx][ny].getOcupante();
+        if (obj instanceof Enemigo) {
+            atacar(protagonista, obj);
+        } else {
             mapa[x][y].setOcupante(null);
-            mapa[nuevoX][nuevoY].setOcupante(protagonista);
-            protagonista.setPosicion(nuevoX, nuevoY);
+            mapa[nx][ny].setOcupante(protagonista);
+            protagonista.setPosicion(nx, ny);
         }
-
         return true;
     }
 
@@ -151,63 +136,51 @@ public class ModeloJuego {
             turnoActual++;
             prepararTurnos();
         }
-
         personajeActual = colaTurnos.poll();
         if (personajeActual == null || personajeActual.getSalud() <= 0) {
             turnoSiguiente();
             return;
         }
-
-        if (personajeActual instanceof Enemigo enemigo) {
-            PauseTransition pausa = new PauseTransition(Duration.millis(300));
-            pausa.setOnFinished(e -> {
-                accionEnemigo(enemigo);
+        if (personajeActual instanceof Enemigo e) {
+            PauseTransition pause = new PauseTransition(Duration.millis(300));
+            pause.setOnFinished(evt -> {
+                accionEnemigo(e);
                 verificarFin();
                 notificarEscuchas();
                 turnoSiguiente();
             });
-            pausa.play();
+            pause.play();
         }
-        // Si es el protagonista, se espera a su entrada desde teclado
     }
 
     private void prepararTurnos() {
         colaTurnos.clear();
-        List<Personaje> todos = new ArrayList<>();
-        todos.add(protagonista);
-        todos.addAll(enemigos);
-        todos.sort((a, b) -> Integer.compare(b.getVelocidad(), a.getVelocidad()));
-        colaTurnos.addAll(todos);
+        List<Personaje> all = new ArrayList<>();
+        all.add(protagonista);
+        all.addAll(enemigos);
+        all.sort((a, b) -> Integer.compare(b.getVelocidad(), a.getVelocidad()));
+        colaTurnos.addAll(all);
     }
 
     public void verificarFin() {
         enemigos.removeIf(e -> e.getSalud() <= 0);
-
-        if (protagonista.getSalud() <= 0) {
-            notificarFin(false);
-        } else if (enemigos.isEmpty()) {
-            notificarFin(true);
-        }
+        if (protagonista.getSalud() <= 0) notificarFin(false);
+        else if (enemigos.isEmpty())    notificarFin(true);
     }
 
     private void accionEnemigo(Enemigo e) {
         int ex = e.getX(), ey = e.getY();
         int px = protagonista.getX(), py = protagonista.getY();
+        int dx = Integer.compare(px, ex), dy = Integer.compare(py, ey);
+        int dist = Math.abs(px - ex) + Math.abs(py - ey);
+        int nx = ex + dx, ny = ey + dy;
 
-        int dx = Integer.compare(px, ex);
-        int dy = Integer.compare(py, ey);
-        int distancia = Math.abs(px - ex) + Math.abs(py - ey);
-
-        int nuevoX = ex + dx;
-        int nuevoY = ey + dy;
-
-        if (distancia <= e.getVision() && enLimites(nuevoX, nuevoY)) {
-            if (mapa[nuevoX][nuevoY].getOcupante() instanceof Prota) {
-                atacar(e, protagonista);
-            } else if (!mapa[nuevoX][nuevoY].esMuro() && mapa[nuevoX][nuevoY].getOcupante() == null) {
+        if (dist <= e.getVision() && enLimites(nx, ny)) {
+            if (mapa[nx][ny].getOcupante() instanceof Prota) atacar(e, protagonista);
+            else if (!mapa[nx][ny].esMuro() && mapa[nx][ny].getOcupante() == null) {
                 mapa[ex][ey].setOcupante(null);
-                e.setPosicion(nuevoX, nuevoY);
-                mapa[nuevoX][nuevoY].setOcupante(e);
+                e.setPosicion(nx, ny);
+                mapa[nx][ny].setOcupante(e);
             }
         } else {
             moverAleatoriamente(e);
@@ -215,18 +188,13 @@ public class ModeloJuego {
     }
 
     private void moverAleatoriamente(Enemigo e) {
-        int ex = e.getX();
-        int ey = e.getY();
-
-        int[][] direcciones = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-        List<int[]> opciones = Arrays.asList(direcciones);
-        Collections.shuffle(opciones);
-
-        for (int[] dir : opciones) {
-            int nx = ex + dir[0];
-            int ny = ey + dir[1];
-
-            if (enLimites(nx, ny) && !mapa[nx][ny].esMuro() && mapa[nx][ny].getOcupante() == null) {
+        int ex = e.getX(), ey = e.getY();
+        int[][] dirs = {{-1,0},{1,0},{0,-1},{0,1}};
+        List<int[]> opts = Arrays.asList(dirs);
+        Collections.shuffle(opts);
+        for (int[] d : opts) {
+            int nx = ex + d[0], ny = ey + d[1];
+            if (enLimites(nx, ny) && !mapa[nx][ny].esMuro() && mapa[nx][ny].getOcupante()==null) {
                 mapa[ex][ey].setOcupante(null);
                 e.setPosicion(nx, ny);
                 mapa[nx][ny].setOcupante(e);
@@ -235,12 +203,11 @@ public class ModeloJuego {
         }
     }
 
-    private void atacar(Personaje atacante, Personaje defensor) {
-        int danio = Math.max(1, atacante.getAtaque() - defensor.getDefensa());
-        defensor.setSalud(defensor.getSalud() - danio);
-
-        if (defensor.getSalud() <= 0) {
-            mapa[defensor.getX()][defensor.getY()].setOcupante(null);
+    private void atacar(Personaje atk, Personaje def) {
+        int danio = Math.max(1, atk.getAtaque() - def.getDefensa());
+        def.setSalud(def.getSalud() - danio);
+        if (def.getSalud() <= 0) {
+            mapa[def.getX()][def.getY()].setOcupante(null);
         }
     }
 
