@@ -1,5 +1,9 @@
 package com.mazmorron;
 
+/*
+ * @author Lucas Rasmussen Marcos y Jhansell Francisco García Vargas
+ */
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
