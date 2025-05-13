@@ -16,6 +16,7 @@ public class ControladorApp implements ModeloJuego.EscuchaModelo {
 
     @FXML private GridPane panelCuadricula;
     @FXML private Label lblSalud, lblAtaque, lblDefensa, lblVelocidad;
+    @FXML private Label lblTurnoActual;
     @FXML private ListView<String> lvOrdenTurnos;
 
     private ModeloJuego modelo;
@@ -46,7 +47,7 @@ public class ControladorApp implements ModeloJuego.EscuchaModelo {
         Celda[][] mapa = modelo.getMapa();
         for (int i = 0; i < mapa.length; i++) {
             for (int j = 0; j < mapa[i].length; j++) {
-                Rectangle celda = new Rectangle(32, 32);
+                Rectangle celda = new Rectangle(40, 40);
                 celda.setStroke(Color.BLACK);
 
                 if (mapa[i][j].esMuro()) {
@@ -64,6 +65,10 @@ public class ControladorApp implements ModeloJuego.EscuchaModelo {
 
                 panelCuadricula.add(celda, j, i);
             }
+        }
+
+        if (lblTurnoActual != null) {
+            lblTurnoActual.setText("Turno: " + modelo.getTurnoActual());
         }
     }
 
@@ -99,24 +104,24 @@ public class ControladorApp implements ModeloJuego.EscuchaModelo {
 
     @FXML
     public void alPresionarTecla(KeyEvent evento) {
-    if (!(modelo.getPersonajeActual() instanceof Prota)) {
-        return; // Ignorar si no es el turno del protagonista
-    }
+        if (!(modelo.getPersonajeActual() instanceof Prota)) {
+            return;
+        }
 
-    boolean seMovio = switch (evento.getCode()) {
-        case W, UP -> modelo.moverProtagonista(-1, 0);
-        case S, DOWN -> modelo.moverProtagonista(1, 0);
-        case A, LEFT -> modelo.moverProtagonista(0, -1);
-        case D, RIGHT -> modelo.moverProtagonista(0, 1);
-        default -> false;
-    };
+        boolean seMovio = switch (evento.getCode()) {
+            case W, UP -> modelo.moverProtagonista(-1, 0);
+            case S, DOWN -> modelo.moverProtagonista(1, 0);
+            case A, LEFT -> modelo.moverProtagonista(0, -1);
+            case D, RIGHT -> modelo.moverProtagonista(0, 1);
+            default -> false;
+        };
 
-    if (seMovio) {
-        modelo.verificarFin();
-        modelo.notificarEscuchas();
-        modelo.turnoSiguiente(); // Solo si se movió, avanza al siguiente turno
+        if (seMovio) {
+            modelo.verificarFin();
+            modelo.notificarEscuchas();
+            modelo.turnoSiguiente();
+        }
     }
-}
 
     @Override
     public void alCambiarModelo() {

@@ -21,6 +21,7 @@ public class ModeloJuego {
     private Prota protagonista;
     private Celda[][] mapa;
     private Runnable accionFin;
+    private int turnoActual = 1;
 
     public void agregarEscucha(EscuchaModelo escucha) {
         escuchas.add(escucha);
@@ -56,6 +57,10 @@ public class ModeloJuego {
         this.accionFin = accion;
     }
 
+    public int getTurnoActual() {
+        return turnoActual;
+    }
+
     private void notificarFin(boolean victoria) {
         if (accionFin != null) {
             accionFin.run();
@@ -71,7 +76,7 @@ public class ModeloJuego {
             while ((linea = lector.readLine()) != null) {
                 if (!linea.trim().isEmpty()) {
                     lineas.add(linea);
-                    if (linea.length() > maxColumnas) maxColumnas = linea.length();
+                    maxColumnas = Math.max(maxColumnas, linea.length());
                 }
             }
 
@@ -143,6 +148,7 @@ public class ModeloJuego {
 
     public void turnoSiguiente() {
         if (colaTurnos.isEmpty()) {
+            turnoActual++;
             prepararTurnos();
         }
 
@@ -162,8 +168,7 @@ public class ModeloJuego {
             });
             pausa.play();
         }
-
-        // Si es el protagonista, se espera a que el jugador actúe
+        // Si es el protagonista, se espera a su entrada desde teclado
     }
 
     private void prepararTurnos() {

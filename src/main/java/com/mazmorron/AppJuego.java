@@ -64,6 +64,9 @@ public class AppJuego extends Application {
         escenario.setScene(escena);
         escenario.show();
 
+        escenario.centerOnScreen();       
+        escenario.setMaximized(true);
+        
         controlador.inicializarJuego();
         modelo.turnoSiguiente();
     }
