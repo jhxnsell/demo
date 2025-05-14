@@ -6,6 +6,11 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
+/**
+ * Controlador de la pantalla final del juego.
+ * Muestra mensaje de victoria o derrota y botones para reintentar,
+ * avanzar al siguiente nivel o salir.
+ */
 public class ControladorFinal {
 
     @FXML private Label lblResultado;
@@ -16,6 +21,15 @@ public class ControladorFinal {
     private Runnable accionSiguiente;
     private Runnable accionSalir;
 
+    /**
+     * Inicializa la vista final con el resultado del nivel:
+     * muestra botones y texto según victoria o derrota.
+     * @param escenario Escenario de JavaFX para esta vista.
+     * @param victoria True si el jugador ganó el nivel.
+     * @param reintentar Acción a ejecutar al reintentar.
+     * @param siguiente Acción a ejecutar para siguiente nivel.
+     * @param salir Acción a ejecutar al salir del juego.
+     */
     public void inicializar(Stage escenario, boolean victoria,
                             Runnable reintentar, Runnable siguiente, Runnable salir) {
         this.escenario = escenario;

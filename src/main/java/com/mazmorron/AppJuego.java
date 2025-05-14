@@ -1,4 +1,3 @@
-// src/main/java/com/mazmorron/AppJuego.java
 package com.mazmorron;
 
 import com.mazmorron.controlador.ControladorApp;
@@ -14,8 +13,16 @@ import javafx.stage.Stage;
 
 import java.io.InputStream;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 
+/**
+ * Clase principal de la aplicación JavaFX.
+ * Gestiona la pantalla de inicio, carga de niveles y ciclo de juego.
+ * @author Lucas Rasmussen Marcos
+ * @author Jhansell Francisco García Vargas
+ */
 public class AppJuego extends Application {
 
     private Stage escenario;
@@ -34,12 +41,19 @@ public class AppJuego extends Application {
         "/enemigos/enemigos3.txt"
     };
 
+    /**
+     * Método de arranque de JavaFX, muestra la pantalla de inicio.
+     * @param primaryStage Escenario principal proporcionado por JavaFX.
+     */
     @Override
     public void start(Stage primaryStage) {
         this.escenario = primaryStage;
         mostrarPantallaInicio();
     }
 
+    /**
+     * Muestra la ventana de inicio para capturar datos del jugador y lanza el juego.
+     */
     private void mostrarPantallaInicio() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/VistaInicio.fxml"));
@@ -70,32 +84,34 @@ public class AppJuego extends Application {
         }
     }
 
-    /**  
-     * Intenta cargar un recurso del classpath (con getResourceAsStream 
-     * y ClassLoader), y si falla, lo busca como fichero en disco:
-     * ./mapas/nivel1.txt  o ./enemigos/enemigos1.txt
+    /**
+     * Intenta abrir un recurso dado su ruta, buscando en classpath o en disco.
+     * @param ruta Ruta del recurso.
+     * @return Flujo de entrada del recurso.
+     * @throws IOException Si no se encuentra el recurso.
      */
     private InputStream abrirRecurso(String ruta) throws IOException {
-        // 1) getResourceAsStream con '/':
         InputStream is = getClass().getResourceAsStream(ruta);
-        if (is != null) return is;
-
-        // 2) ClassLoader (sin '/'):
+        if (is != null) {
+            return is;
+        }
         String sinSlash = ruta.startsWith("/") ? ruta.substring(1) : ruta;
         is = getClass().getClassLoader().getResourceAsStream(sinSlash);
-        if (is != null) return is;
-
-        // 3) desde disco, relativo al working dir:
+        if (is != null) {
+            return is;
+        }
         Path p = Paths.get(System.getProperty("user.dir"), sinSlash);
         if (Files.exists(p)) {
             return Files.newInputStream(p);
         }
-
-        // no encontrado en ninguno de los anteriores
-        throw new IOException("No se encontró el recurso: " + ruta + 
-            " ni en classpath ni en disco (./" + sinSlash + ")");
+        throw new IOException("No se encontró el recurso: " + ruta);
     }
 
+    /**
+     * Configura la escena de juego para el nivel actual, carga mapa y enemigos,
+     * inicializa modelo y controlador y muestra la ventana.
+     * @param protagonista Instancia del personaje principal.
+     */
     private void lanzarJuego(Prota protagonista) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/vista/VistaPrincipal.fxml"));
@@ -117,25 +133,18 @@ public class AppJuego extends Application {
                 }
             });
 
-            // 1) Cargar mapa
             InputStream mapaStream = abrirRecurso(mapas[nivelActual]);
             modelo.cargarMapaDesde(mapaStream);
 
-            // 2) Cargar enemigos
             InputStream enemStream = abrirRecurso(enemigos[nivelActual]);
             modelo.cargarEnemigosDesde(enemStream);
 
-            // 3) Sitúa al protagonista en el mapa
             Celda[][] m = modelo.getMapa();
-            m[protagonista.getX()][protagonista.getY()]
-              .setOcupante(protagonista);
+            m[protagonista.getX()][protagonista.getY()].setOcupante(protagonista);
             modelo.notificarEscuchas();
 
-            // s) Iniciar la vista
             controlador.setModelo(modelo);
             controlador.inicializarJuego();
-
-            // 5) Arrancar el primer turno (para que personajeActual = protagonista)
             modelo.turnoSiguiente();
 
             Scene escena = new Scene(root);
@@ -151,6 +160,10 @@ public class AppJuego extends Application {
         }
     }
 
+    /**
+     * Punto de entrada de la aplicación.
+     * @param args Argumentos de línea de comandos.
+     */
     public static void main(String[] args) {
         launch(args);
     }

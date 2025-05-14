@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"m":"com.dungeonmaze","l":"com.mazmorron"},{"m":"com.dungeonmaze","l":"com.mazmorron.controlador"},{"m":"com.dungeonmaze","l":"com.mazmorron.modelo"}];updateSearchResults();
