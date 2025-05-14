@@ -12,6 +12,11 @@ import com.mazmorron.modelo.*;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Controlador principal de la aplicación de juego de mazmorras.
+ * Gestiona la interfaz gráfica, actualiza la vista según el modelo y
+ * maneja la interacción del usuario.
+ */
 public class ControladorApp implements ModeloJuego.EscuchaModelo {
 
     @FXML private GridPane panelCuadricula;
@@ -21,27 +26,38 @@ public class ControladorApp implements ModeloJuego.EscuchaModelo {
 
     private ModeloJuego modelo;
 
+    /**
+     * Asocia el modelo de juego al controlador y registra este controlador como escucha.
+     * @param modelo Instancia del modelo de juego.
+     */
     public void setModelo(ModeloJuego modelo) {
         this.modelo = modelo;
         modelo.agregarEscucha(this);
     }
 
+    /**
+     * Inicializa la vista del juego: dibuja el mapa, las estadísticas y el orden de turnos,
+     * asegura el foco en el tablero y arranca la secuencia de turnos.
+     */
     public void inicializarJuego() {
-    dibujarMapa();
-    actualizarEstadisticas();
-    actualizarOrdenTurnos();
+        dibujarMapa();
+        actualizarEstadisticas();
+        actualizarOrdenTurnos();
 
-    // Forzar foco al tablero
-    panelCuadricula.requestFocus();
-    panelCuadricula.focusedProperty().addListener((obs, oldV, newV) -> {
-        if (!newV) panelCuadricula.requestFocus();
-    });
+        // Mantener foco en el panel de cuadrícula
+        panelCuadricula.requestFocus();
+        panelCuadricula.focusedProperty().addListener((obs, oldV, newV) -> {
+            if (!newV) panelCuadricula.requestFocus();
+        });
 
-    // 🚀 Arrancamos la secuencia de turnos para que personajeActual sea el protagonista
-    modelo.turnoSiguiente();
+        // Arranca la secuencia de turnos para el protagonista
+        modelo.turnoSiguiente();
     }
 
-
+    /**
+     * Dibuja el mapa de juego en la cuadrícula, colorea muros, suelo,
+     * protagonista y enemigos, y actualiza la etiqueta del turno actual.
+     */
     public void dibujarMapa() {
         panelCuadricula.getChildren().clear();
         Celda[][] mapa = modelo.getMapa();
@@ -72,6 +88,9 @@ public class ControladorApp implements ModeloJuego.EscuchaModelo {
         }
     }
 
+    /**
+     * Actualiza las etiquetas de estadísticas con los valores actuales del protagonista.
+     */
     public void actualizarEstadisticas() {
         Prota p = modelo.getProtagonista();
         lblSalud.setText("Salud: " + p.getSalud());
@@ -80,6 +99,9 @@ public class ControladorApp implements ModeloJuego.EscuchaModelo {
         lblVelocidad.setText("Velocidad: " + p.getVelocidad());
     }
 
+    /**
+     * Actualiza la lista que muestra el orden de turnos según la velocidad de cada personaje.
+     */
     public void actualizarOrdenTurnos() {
         List<Personaje> todos = new ArrayList<>();
         todos.add(modelo.getProtagonista());
@@ -90,18 +112,20 @@ public class ControladorApp implements ModeloJuego.EscuchaModelo {
 
         for (Personaje p : todos) {
             String texto = p.getNombre();
-
             if (p instanceof Enemigo) {
                 texto += " - Salud: " + p.getSalud();
             } else {
                 texto += " (Tú)";
             }
-
             texto += " - Velocidad: " + p.getVelocidad();
             lvOrdenTurnos.getItems().add(texto);
         }
     }
 
+    /**
+     * Maneja los eventos de teclado para mover al protagonista.
+     * @param evento Evento de tecla presionada.
+     */
     @FXML
     public void alPresionarTecla(KeyEvent evento) {
         if (!(modelo.getPersonajeActual() instanceof Prota)) {
@@ -109,11 +133,11 @@ public class ControladorApp implements ModeloJuego.EscuchaModelo {
         }
 
         boolean seMovio = switch (evento.getCode()) {
-            case W, UP -> modelo.moverProtagonista(-1, 0);
-            case S, DOWN -> modelo.moverProtagonista(1, 0);
-            case A, LEFT -> modelo.moverProtagonista(0, -1);
+            case W, UP    -> modelo.moverProtagonista(-1, 0);
+            case S, DOWN  -> modelo.moverProtagonista(1, 0);
+            case A, LEFT  -> modelo.moverProtagonista(0, -1);
             case D, RIGHT -> modelo.moverProtagonista(0, 1);
-            default -> false;
+            default        -> false;
         };
 
         if (seMovio) {
@@ -123,6 +147,9 @@ public class ControladorApp implements ModeloJuego.EscuchaModelo {
         }
     }
 
+    /**
+     * Actualiza la vista cuando el modelo notifica un cambio.
+     */
     @Override
     public void alCambiarModelo() {
         dibujarMapa();
