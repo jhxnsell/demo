@@ -57,4 +57,13 @@ public abstract class Personaje {
         this.x = x;
         this.y = y;
     }
+
+    protected void recibirDanio(int i){
+        // Método para recibir daño.
+        // Aquí se puede restar el daño a la salud del personaje.
+        this.salud -= i;
+        if (this.salud < 0) {
+            this.salud = 0; // Asegurarse de que la salud no sea negativa.
+        }
+    }
 }

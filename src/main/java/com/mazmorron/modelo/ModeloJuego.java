@@ -120,29 +120,40 @@ public class ModeloJuego {
      * @param in Flujo de entrada del archivo de mapa.
      */
     public void cargarMapaDesde(InputStream in) {
-        if (in == null) throw new IllegalArgumentException("Mapa: recurso no encontrado.");
-        try (BufferedReader r = new BufferedReader(new InputStreamReader(in))) {
-            List<String> lines = new ArrayList<>();
-            String line;
-            int maxC = 0;
-            while ((line = r.readLine()) != null) {
-                if (!line.trim().isEmpty()) {
-                    lines.add(line);
-                    maxC = Math.max(maxC, line.length());
-                }
+    if (in == null) throw new IllegalArgumentException("Mapa: recurso no encontrado.");
+    try (BufferedReader r = new BufferedReader(new InputStreamReader(in))) {
+        List<String> lines = new ArrayList<>();
+        String line;
+        int maxC = 0;
+        while ((line = r.readLine()) != null) {
+            if (!line.trim().isEmpty()) {
+                lines.add(line);
+                maxC = Math.max(maxC, line.length());
             }
-            mapa = new Celda[lines.size()][maxC];
-            for (int i = 0; i < lines.size(); i++) {
-                String row = lines.get(i);
-                for (int j = 0; j < maxC; j++) {
-                    mapa[i][j] = new Celda(j < row.length() && row.charAt(j) == '#');
-                }
-            }
-            notificarEscuchas();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+        mapa = new Celda[lines.size()][maxC];
+        for (int i = 0; i < lines.size(); i++) {
+            String row = lines.get(i);
+            for (int j = 0; j < maxC; j++) {
+                if (j < row.length()) {
+                    char c = row.charAt(j);
+                    if (c == '#') {
+                        mapa[i][j] = new Celda(Celda.TipoCelda.MURO);
+                    } else if (c == '@') {
+                        mapa[i][j] = new Celda(Celda.TipoCelda.TRAMPA);
+                    } else {
+                        mapa[i][j] = new Celda(Celda.TipoCelda.SUELO);
+                    }
+                } else {
+                    mapa[i][j] = new Celda(Celda.TipoCelda.SUELO); // Espacios vacíos como suelo.
+                }
+            }
+        }
+        notificarEscuchas();
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+}
 
     /**
      * Carga enemigos desde un InputStream, los coloca en el mapa y notifica cambios.

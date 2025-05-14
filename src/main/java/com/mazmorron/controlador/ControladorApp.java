@@ -68,6 +68,8 @@ public class ControladorApp implements ModeloJuego.EscuchaModelo {
 
                 if (mapa[i][j].esMuro()) {
                     celda.setFill(Color.DARKGRAY);
+                } else if (mapa[i][j].getTipo() == Celda.TipoCelda.TRAMPA){
+                    celda.setFill(Color.YELLOW);
                 } else {
                     celda.setFill(Color.BEIGE);
                 }

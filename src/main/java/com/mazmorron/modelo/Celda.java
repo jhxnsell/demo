@@ -2,27 +2,45 @@ package com.mazmorron.modelo;
 
 /**
  * Representa una celda del mapa.
- * Puede ser un muro o contener un personaje.
+ * Puede ser un muro, suelo o una trampa.
  */
 public class Celda {
-    private boolean muro;
+    public enum TipoCelda {
+        SUELO, MURO, TRAMPA
+    }
+
+    private TipoCelda tipo;
     private Personaje ocupante;
-
+    
     /**
-     * Constructor que establece si la celda es muro.
-     * @param muro True si es un muro.
+     * Constructor que establece el tipo de celda.
+     * @param muro Tipo de la celda (SUELO, MURO, TRAMPA).
      */
-    public Celda(boolean muro) { this.muro = muro; }
-
+    public Celda(boolean muro) {
+        this.tipo = muro ? TipoCelda.TRAMPA : TipoCelda.SUELO;
+    }
+    public Celda(TipoCelda suelo) {
+        this.tipo = suelo;
+    }
     /** @return True si es muro. */
-    public boolean esMuro() { return muro; }
+    public boolean esMuro() {
+        return tipo == TipoCelda.MURO;
+    }
 
     /** @return Personaje que ocupa la celda, o null si está vacía. */
-    public Personaje getOcupante() { return ocupante; }
+    public Personaje getOcupante() {
+        return ocupante;
+    }
 
-    /**
-     * Asigna un personaje a la celda.
-     * @param p Personaje a colocar.
-     */
-    public void setOcupante(Personaje p) { this.ocupante = p; }
+    public void setOcupante(Personaje p) {
+        this.ocupante = p;
+        if (tipo == TipoCelda.TRAMPA && p != null) {
+            p.recibirDanio(10);
+        }
+    }
+
+    /** @return Tipo de la celda. */
+    public TipoCelda getTipo() {
+        return tipo;
+    }
 }
