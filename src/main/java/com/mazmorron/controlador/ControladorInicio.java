@@ -7,7 +7,7 @@ import javafx.scene.control.TextField;
 
 public class ControladorInicio {
 
-    private static final int MAX_PUNTOS = 40;
+    private static final int MAX_PUNTOS = 80;
 
     @FXML private TextField txtNombre;
     @FXML private TextField txtSalud;

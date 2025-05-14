@@ -131,7 +131,7 @@ public class AppJuego extends Application {
               .setOcupante(protagonista);
             modelo.notificarEscuchas();
 
-            // 4) Iniciar la vista
+            // s) Iniciar la vista
             controlador.setModelo(modelo);
             controlador.inicializarJuego();
 
